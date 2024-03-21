@@ -1,0 +1,52 @@
+.box-1 {
+  width: 50em;
+  background-color: #c364fa;
+  height: 58em;
+  border-radius: 0 0 50% 50%;
+  position: absolute;
+  right: 70%;
+  z-index: 1;
+}
+img {
+  position: absolute;
+  scale: 1.3;
+  top: 12%;
+  right: 50%;
+}
+.box-2 {
+  width: 50em;
+  background-color: #c364fa;
+  height: 58em;
+  border-radius: 50% 50% 0 0;
+  position: absolute;
+  left: 75%;
+  bottom: 0%;
+  z-index: 1;
+  opacity: 0.8;
+}
+.form-class{
+  z-index:1;
+}
+.form-class::after {
+  content: "";
+  width: 200px;
+  height: 200px;;
+  background: red;
+  position: fixed;
+  left:32%;
+  top: 73%;
+  border-radius: 50%;
+  z-index: -1;
+}
+.form-class::before {
+  content: "";
+  width: 200px;
+  height: 200px;
+  background: red;
+  position: fixed;
+  right:32%;
+  bottom: 73%;
+  border-radius: 50%;
+  z-index: -1;
+}
+

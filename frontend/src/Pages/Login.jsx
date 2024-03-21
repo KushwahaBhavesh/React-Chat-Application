@@ -1,0 +1,125 @@
+import React, { useState } from "react";
+import "../Css/register.css";
+import toast from "react-hot-toast";
+import { Link, useNavigate } from "react-router-dom";
+import { IoEye } from "react-icons/io5";
+import { BiSolidHide } from "react-icons/bi";
+import { useRef } from "react";
+import axios from "axios";
+
+
+
+const Login = () => {
+
+  const [passwordType, SetPasswordType] = useState(false);
+  const handlePasswordView = (e) => {
+    e.preventDefault();
+    passwordType ? SetPasswordType(false) : SetPasswordType(true);
+  };
+  const navigate = useNavigate()
+  const emaiRef = useRef(undefined);
+  const passwordRef = useRef(undefined);
+
+  // Form Submition
+  axios.defaults.withCredentials = true;
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+
+    const email = emaiRef.current.value;
+    const password = passwordRef.current.value;
+
+    if (password.length < 8) {
+      toast.error("Enter Valid password");
+    } else {
+      try {
+        const config = { Headers: { "Content-Type": "application/json" } };
+        const { data } = await axios.post(
+          `http://localhost:8000/api/auth/`,
+          { email, password },
+          config,
+
+        );
+        console.log(data);
+
+        if (data && data.success) {
+          toast.success(data.message);
+          navigate('/protected')
+        } else {
+          toast.error(data.message);
+        }
+      } catch (error) {
+        toast.error(error);
+      }
+    }
+  };
+
+  return (
+    <>
+      <section className="container-fluid bg-warning vh-100">
+        <div className="box-1"></div>
+        <div className="box-2"></div>
+
+        <div className="row row-cols-2 d-flex justify-content-center align-items-center vh-100">
+          {/* Registration Page */}
+          <div className="form-class col d-flex justify-content-center align-items-center border-0">
+            <form
+              className="form-control w-50 py-5 bg-light rounded-5"
+              onSubmit={handleFormSubmit}
+            >
+              <div className="row g-3  d-flex flex-column justify-content-center align-items-center">
+                <h3 className="text-center fw-bolder ">Login</h3>
+
+                <div className="col-lg-10  col-md-6">
+                  <input
+                    type="email"
+                    className="form-control p-3"
+                    placeholder="abc@gmail.com "
+                    ref={emaiRef}
+                  />
+                </div>
+
+                <div className="col-lg-10  col-md-6 position-relative align-items-center justify-content-center d-flex">
+                  <input
+                    type={passwordType ? "text" : "password"}
+                    className="form-control  p-3 position-relative"
+                    placeholder="Password"
+                    ref={passwordRef}
+                    required
+                  />
+                  <button
+                    className=" border-0 bg-white fs-3 p-1 position-absolute end-0 mx-3"
+                    onClick={handlePasswordView}
+                  >
+                    {passwordType ? <IoEye /> : <BiSolidHide />}
+                  </button>
+                </div>
+
+                <div className="col-lg-10  col-md-6 mb-3">
+                  <button className="btn btn-primary w-100">Login</button>
+                </div>
+                <div className="col-lg-10 col-md-6 position-relative">
+                  <span className="position-absolute bottom-0 end-0 ">
+                    Forgot password ?
+                  </span>
+                </div>
+                <div className="col-lg-10 col-md-6 text-center mt-5">
+                  <span className="">Not Have Account </span>
+                </div>
+                <div className="col-lg-10 col-md-6 text-center">
+                  <Link to="/register">
+                    {" "}
+                    <button className="btn btn-primary w-100">
+                      Create new Account
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+};
+
+export default Login;
