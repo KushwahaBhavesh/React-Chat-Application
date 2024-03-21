@@ -11,9 +11,9 @@ Responsive design: The application is designed to be usable and visually appeali
 <h3>Technologies Used</h3>
 <h4>Frontend:</h4>
 
-React.js
-Vite
-HTML/CSS
+React.js, 
+Vite, 
+HTML/CSS, 
 WebSocket (for real-time communication)
 
 <h4>Backend:</h4>
@@ -24,13 +24,13 @@ MongoDB (with Mongoose ORM)
 WebSocket (for real-time communication)
 
 
-<h3>Prerequisites/h3>
+<h3>Prerequisites</h3>
 Before running this application, ensure you have the following installed:
 
 Node.js and npm (Node Package Manager)
 MongoDB database server
 
-<h3>Get Started/h3>
+<h3>Get Started</h3>
 Clone the repository: git clone https://github.com/yourusername/React-Chat-Application.git
 
 Navigate to the project directory: cd react-chat-app
@@ -55,7 +55,7 @@ npm run server
 Start the frontend development server:
 
 <h3>Folder Structure</h3>
-
+<div>
 your folder path
 ├── frontend/                  # Frontend directory
 │   ├── public/              # Static assets
@@ -76,6 +76,7 @@ your folder path
 │   └── server.js            # Entry point for the Node.js application
 ├── README.md                # Project documentation
 └── .gitignore               # Git ignore file
+  </div>
 npm run dev
 
 Open your web browser and navigate to http://localhost:5173 to view the application.
