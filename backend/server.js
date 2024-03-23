@@ -28,7 +28,7 @@ dotenv.config();
 // Database connection
 mongoose.connect(process.env.URI)
   .then(() => console.log("Connected"))
-  .catch(error => console.log(error))
+  .catch(error => res.status(500).json(error))
 
 
 // routes Api

@@ -43,7 +43,7 @@ const Login = () => {
 
         if (data && data.success) {
           toast.success(data.message);
-          navigate('/protected')
+          navigate('/user/chat')
         } else {
           toast.error(data.message);
         }
@@ -61,7 +61,7 @@ const Login = () => {
 
         <div className="row row-cols-2 d-flex justify-content-center align-items-center vh-100">
           {/* Registration Page */}
-          <div className="form-class col d-flex justify-content-center align-items-center border-0">
+          <div className="form-className col d-flex justify-content-center align-items-center border-0">
             <form
               className="form-control w-50 py-5 bg-light rounded-5"
               onSubmit={handleFormSubmit}
@@ -107,7 +107,6 @@ const Login = () => {
                 </div>
                 <div className="col-lg-10 col-md-6 text-center">
                   <Link to="/register">
-                    {" "}
                     <button className="btn btn-primary w-100">
                       Create new Account
                     </button>

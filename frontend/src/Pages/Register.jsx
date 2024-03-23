@@ -78,7 +78,7 @@ const Register = () => {
 
         <div className="row row-cols-2 d-flex justify-content-center align-items-center  vh-100">
           {/* Registration Page */}
-          <div className="form-class col d-flex justify-content-center align-items-center border-0">
+          <div className="form-className col d-flex justify-content-center align-items-center border-0">
             <form
               className="form-control w-50  py-5 bg-light rounded-5"
               onSubmit={handleFormSubmit}
