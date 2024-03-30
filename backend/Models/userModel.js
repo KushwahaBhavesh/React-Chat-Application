@@ -22,9 +22,31 @@ const userSchema = new mongoose.Schema({
   confirmPassword: {
     type: String,
     required: true
+  },
+  profile: {
+    firstName: String,
+    lastName: String,
+    birthdate: String,
+    gender: {
+      type: String,
+      enum: ['male', 'female'],
+    },
+    location: {
+      address: String,
+      country: String,
+      city: String,
+      zipcode: Number
+    },
+    bio: String,
+    profile_picture_url: String,
+    social_media: {
+      facebook: String,
+      twitter: String,
+      instagram: String,
+      linkedin: String
+    }
   }
-
-})
+}, { timestamps: true })
 
 
 const users = mongoose.model('users', userSchema);

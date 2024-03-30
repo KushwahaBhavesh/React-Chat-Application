@@ -5,6 +5,9 @@ import dotenv from 'dotenv'
 import morgan from 'morgan'
 import cors from 'cors'
 import authRoutes from './Routes/authRoutes.js'
+import messageRoutes from './Routes/messageRoutes.js'
+import usersRoutes from './Routes/usersRoutes.js'
+
 
 
 
@@ -15,9 +18,9 @@ app.use(cookieParser());
 app.use(express.json())
 app.use(morgan("dev"))
 app.use(cors({
-  origin:["http://localhost:5173"],
-  methods:["GET","POST"],
-  credentials:true
+  origin: ["http://localhost:5173"],
+  methods: ["GET", "POST"],
+  credentials: true
 }))
 
 dotenv.config();
@@ -28,11 +31,13 @@ dotenv.config();
 // Database connection
 mongoose.connect(process.env.URI)
   .then(() => console.log("Connected"))
-  .catch(error => res.status(500).json(error))
+  .catch(error => console.log("Connection Error", error))
 
 
 // routes Api
-app.use('/api/auth/',authRoutes)
+app.use('/api/auth', authRoutes)
+app.use('/api/messages', messageRoutes)
+app.use('/api/user',usersRoutes)
 
 
 

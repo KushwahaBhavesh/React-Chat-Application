@@ -6,12 +6,18 @@ import { IoEye } from "react-icons/io5";
 import { BiSolidHide } from "react-icons/bi";
 import { useRef } from "react";
 import axios from "axios";
+import { useDispatch, useSelector } from 'react-redux'
+import { LOGIN_USER_FAILURE, LOGIN_USER_REQUEST, LOGIN_USER_SUCCESS } from "../redux/feature/userReducer";
+import LoadingSpinner from "../Components/Spinner/LoadingSpinner";
 
 
 
 const Login = () => {
 
   const [passwordType, SetPasswordType] = useState(false);
+  const dispatch = useDispatch()
+  const { isLoading, user } = useSelector(state => state.user)
+
   const handlePasswordView = (e) => {
     e.preventDefault();
     passwordType ? SetPasswordType(false) : SetPasswordType(true);
@@ -32,6 +38,7 @@ const Login = () => {
       toast.error("Enter Valid password");
     } else {
       try {
+        dispatch(LOGIN_USER_REQUEST())
         const config = { Headers: { "Content-Type": "application/json" } };
         const { data } = await axios.post(
           `http://localhost:8000/api/auth/`,
@@ -42,12 +49,17 @@ const Login = () => {
         console.log(data);
 
         if (data && data.success) {
+          const {name,profile,_id} = data.user
+          const user =  {name,profile,_id}
+          dispatch(LOGIN_USER_SUCCESS(user))
           toast.success(data.message);
           navigate('/user/chat')
         } else {
+          dispatch(LOGIN_USER_FAILURE(data.message))
           toast.error(data.message);
         }
       } catch (error) {
+        dispatch(LOGIN_USER_FAILURE(error))
         toast.error(error);
       }
     }
@@ -55,6 +67,7 @@ const Login = () => {
 
   return (
     <>
+    {isLoading ? <LoadingSpinner/> :(
       <section className="container-fluid bg-warning vh-100">
         <div className="box-1"></div>
         <div className="box-2"></div>
@@ -117,6 +130,7 @@ const Login = () => {
           </div>
         </div>
       </section>
+      )}
     </>
   );
 };

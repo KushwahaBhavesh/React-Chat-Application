@@ -2,10 +2,11 @@ import userModel from "../Models/userModel.js";
 import jwt from "jsonwebtoken";
 
 import bcrypt from "bcrypt";
+import { encryptConfirmPassword, encryptPassword } from "../Utils/authHandler.js";
 
 export const RegisterController = async (req, res) => {
   try {
-    const { name, phone, email, password, confirmPassword } = req.body;
+    const { name, phone, email, password, confirmPassword, profile_picture_url } = req.body;
 
     if (!name) {
       return res.json({
@@ -49,8 +50,8 @@ export const RegisterController = async (req, res) => {
     }
 
     // encrypting Password
-    const encryptedPassword = await encryptedPassword(password);
-    const encryptedConfirmPassword = await encryptedConfirmPassword(
+    const encryptedPassword = await encryptPassword(password);
+    const encryptedConfirmPassword = await encryptConfirmPassword(
       confirmPassword
     );
 
@@ -61,10 +62,14 @@ export const RegisterController = async (req, res) => {
       email,
       password: encryptedPassword,
       confirmPassword: encryptedConfirmPassword,
+      profile: { 
+        profile_picture_url:profile_picture_url 
+      },
     }).save();
 
     return res.status(200).json({
       success: true,
+      message: "User Register Successfully",
       user,
     });
   } catch (error) {
@@ -114,7 +119,7 @@ export const LoginController = async (req, res) => {
           process.env.USER_REFRESH_SECRET_KEY,
           { expiresIn: "5m" }
         );
-        res.cookie("accessToken", accessToken,{maxAge:60000});
+        res.cookie("accessToken", accessToken, { maxAge: 60000 });
         res.cookie("refreshToken", refreshToken, {
           maxAge: 300000,
           httpOnly: true,

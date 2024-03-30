@@ -1,15 +1,23 @@
 import React, { useRef, useState } from "react";
 import "../Css/register.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BiSolidHide } from "react-icons/bi";
 import { IoEye } from "react-icons/io5";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { useDispatch, useSelector } from "react-redux"
+import { REGISTER_USER_FAILURE, REGISTER_USER_REQUEST, REGISTER_USER_SUCCESS } from "../redux/feature/userReducer";
+import LoadingSpinner from '../Components/Spinner/LoadingSpinner'
+
 
 const Register = () => {
   // show Password button
   const [passwordType, SetPasswordType] = useState(false);
   const [cPassowrd, SetCPassword] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  let { isLoading, user ,isError } = useSelector(state => state.user)
+
 
   const handlePasswordView = (e) => {
     e.preventDefault();
@@ -37,41 +45,57 @@ const Register = () => {
     const email = emailRef.current.value;
     const password = passwordRef.current.value;
     const confirmPassword = confirmPasswordRef.current.value;
+    const profile_picture_url=`https://api.dicebear.com/8.x/initials/svg?seed=${name}`;
 
-    const userData = { name, phone, email, password, confirmPassword };
+    const userData = { name, phone, email, password, confirmPassword,profile_picture_url};
     console.log(userData);
 
     // Form Validation
     if (phone.length !== 10) {
       toast.error("Enter valid Phone Number");
     } else if (password.length < 8) {
-      toast.error("Enter valid Password");
+      toast.error("Password must be 8 character");
     } else if (confirmPassword.length < 8) {
       toast.error("Enter valid confirm passowrd");
     } else if (password !== confirmPassword) {
       toast.error("confirm password not matched");
     } else {
-
-      // toast.success("user Register Successfully");
       try {
+        dispatch(REGISTER_USER_REQUEST())
+        console.log("request", { isLoading, user });
         const config = { Headers: { "Content-Type": "application/json" } };
         const { data } = await axios.post(`http://localhost:8000/api/auth/register`, userData, config);
+
+        // loading console
+
 
         console.log(data);
         if (data && data.success) {
           toast.success(data.message)
+          dispatch(REGISTER_USER_SUCCESS(data.user))
+          console.log("success", { isLoading, user });
+          setTimeout(() => {
+            // navigate("/")
+          }, 3000)
         }
         else {
+          dispatch(REGISTER_USER_FAILURE(data.message))
+          console.log("failure", { isLoading, user });
           toast.error(data.message);
         }
       } catch (error) {
+        
+        dispatch(REGISTER_USER_FAILURE(error))
         toast.error(error);
       }
     }
+    console.log("outer", { isLoading, user });
   };
+  // console.log({isLoading,user});
 
   return (
     <>
+
       <section className="container-fluid vh-100 bg-primary">
         <div className="box-1"></div>
         <div className="box-2"></div>
@@ -85,7 +109,7 @@ const Register = () => {
             >
               <div className="row g-3  d-flex flex-column justify-content-center align-items-center">
                 <h3 className="text-center fw-bolder ">Create Account</h3>
-                <div className="col-lg-10 ">
+                <div className="col-lg-10 col-md-8">
                   <input
                     type="text"
                     className="form-control p-3"
@@ -94,7 +118,7 @@ const Register = () => {
                     ref={nameRef}
                   />
                 </div>
-                <div className="col-lg-10  col-md-6">
+                <div className="col-lg-10  col-md-8">
                   <input
                     type="tel"
                     className="form-control p-3"
@@ -105,7 +129,7 @@ const Register = () => {
                     ref={phoneRef}
                   />
                 </div>
-                <div className="col-lg-10  col-md-6">
+                <div className="col-lg-10  col-md-8">
                   <input
                     type="email"
                     className="form-control p-3"
@@ -114,7 +138,7 @@ const Register = () => {
                     ref={emailRef}
                   />
                 </div>
-                <div className="col-lg-10  col-md-6 position-relative align-items-center justify-content-center d-flex">
+                <div className="col-lg-10  col-md-8 position-relative align-items-center justify-content-center d-flex">
                   <input
                     type={passwordType ? "text" : "password"}
                     className="form-control  p-3 position-relative"
@@ -129,7 +153,7 @@ const Register = () => {
                     {passwordType ? <IoEye /> : <BiSolidHide />}
                   </button>
                 </div>
-                <div className="col-lg-10  col-md-6 position-relative align-items-center justify-content-center d-flex">
+                <div className="col-lg-10  col-md-8 position-relative align-items-center justify-content-center d-flex">
                   <input
                     type={cPassowrd ? "text" : "password"}
                     className="form-control  p-3 position-relative"
@@ -146,7 +170,7 @@ const Register = () => {
                 </div>
                 <div className="col-lg-10  col-md-6 mb-3">
                   <button className="btn btn-primary w-100">
-                    Create Account
+                    {isLoading ? <LoadingSpinner /> : "Create Account"}
                   </button>
                 </div>
                 <div className="col-lg-10 col-md-6 text-center mt-5">
