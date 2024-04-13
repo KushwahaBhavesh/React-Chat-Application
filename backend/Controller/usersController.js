@@ -1,80 +1,168 @@
-import userModel from '../Models/userModel.js'
+import { upload } from "../Routes/usersRoutes.js";
+import userModel from "../Models/userModel.js";
+import cloudinary from "../Utils/CloudinaryConfig.js";
+import { response } from "express";
 
 export const fetchProfile = async (req, res) => {
-  const userID = req.params.userID
+  const userID = req.params.userID;
   try {
-    const user = await userModel.findById(userID).select('-password').select('-confirmPassword');
+    const user = await userModel
+      .findById(userID)
+      .select("-password")
+      .select("-confirmPassword");
     if (!user) {
       return res.status(404).json({
-        message: "User Not found"
-      })
+        message: "User Not found",
+      });
     } else {
       return res.status(200).json({
-        user
-      })
+        user,
+      });
     }
   } catch (error) {
     return res.status(500).json({
       message: "Internal Server Error",
-      error
-
-    })
+      error,
+    });
   }
-}
-
-
+};
 
 // Admin Profile Page Edit
 export const editProfile = async (req, res) => {
-  const userID = req.params.userID
+  const userID = req.params.userID;
   try {
-
     const updateFeilds = req.body;
-    console.log(updateFeilds);
 
-    const existingUser = await userModel.findById(userID)
-    console.log("existingUser:", existingUser);
+    const response = await userModel.updateOne({ _id: userID }, {
+      $set: {
+        "profile.firstName": updateFeilds.firstName,
+        "profile.lastName": updateFeilds.lastName,
+        "profile.birthdate": updateFeilds.DOB,
+        "profile.gender": updateFeilds.gender,
+        "profile.location.address": updateFeilds.location?.address,
+        "profile.location.city": updateFeilds.location?.city,
+        "profile.location.zipcode": updateFeilds.location?.zipcode,
+        "profile.location.country": updateFeilds.location?.country,
+      },
+    });
+    console.log(response);
 
-
-    if (!existingUser) {
-      return res.status(404).json({ error: 'User not found' });
+    if (response.matchedCount === 1) {
+      const user = await userModel.findById({ _id: userID })
+      if (!user) return res.status(404).json({ message: "user not ound" })
+      return res.status(200).json({ message: "profile update successfully", user })
     }
-
-    // check if profile picture url in parameter or not
-    if (!updateFeilds.profile || !updateFeilds.profile.profile_picture_url) {
-      updateFeilds.profile_picture_url = `https://api.dicebear.com/8.x/initials/svg?seed=${updateFeilds.firstName+' '+updateFeilds.lastName}`
-    }
-    console.log("updateFeilds", updateFeilds);
-
-    const user = await userModel.findByIdAndUpdate(userID, {
-      profile:{
-        firstName:updateFeilds.firstName,
-        lastName:updateFeilds.lastName,
-        birthdate:updateFeilds.DOB,
-        profile_picture_url:updateFeilds.profile_picture_url,
-        gender:updateFeilds.gender,
-        location:{
-          address:updateFeilds.location?.address,
-          city:updateFeilds.location?.city,
-          zipcode:updateFeilds.location?.zipcode,
-          country:updateFeilds.location?.country,
-        }
-      }
-    }, { new: true })
-
-    console.log("updated user:",user);
-    if (user) {
-      res.status(200).json({ message: "Profile update successfully", user })
-    } else {
-      res.status(200).json({ message: "Profile update unsuccessfully", })
-    }
-
-
   } catch (error) {
     console.log(error);
-    // return res.status(500).json({
-    //   message: "Internal Server Error",
-    //   error:error
-    // })
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error,
+    });
+  }
+};
+
+
+// upload profile [picture in cloudnary]
+export const profileImageController = async (req, res) => {
+  upload(req, res, async (err) => {
+    if (err) return res.json({ message: "Error in uploading file", err });
+
+    const file = req.file.path;
+    console.log(file);
+    const response = await cloudinary.uploader.upload(file, {
+      upload_preset: "webChatProfile",
+    });
+    const { secure_url } = response;
+    return res.status(200).json({
+      message: "image upload succssfully",
+      secure_url,
+    });
+  });
+};
+
+
+
+// Profile image update
+export const editProfileImage = async (req, res) => {
+  const userID = req.params.userID;
+  console.log(userID);
+  try {
+    const updateFeilds = req.body;
+
+    const result = await userModel.updateOne(
+      { _id: userID },
+      {
+        $set: { "profile.profile_picture_url": updateFeilds.secure_url },
+      }
+    );
+    console.log(result);
+
+    if (result.modifiedCount === 1) {
+      const updatedData = await userModel.findById({ _id: userID });
+      if (!updatedData)
+        return res.status(404).json({ message: "User Not found..." });
+      return res.status(200).json({
+        message: "image update successfully",
+        updatedData,
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error,
+    });
+  }
+};
+
+export const editBio = async (req, res) => {
+  const userID = req.params.userID;
+  const { bioString } = req.body;
+
+  try {
+    console.log(bioString);
+    const response = await userModel.updateOne(
+      { _id: userID },
+      { $set: { "profile.bio": bioString } }
+    );
+
+    if (response.matchedCount === 1) {
+      const user = await userModel.findById({ _id: userID })
+      if (!user) return res.status(404).json({ message: "user not ound" })
+      const { bio } = user.profile
+      return res.status(200).json({ message: "profile update successfully", bio })
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error,
+    });
+  }
+};
+
+
+
+
+// Social media Controller
+export const editSocialMedia = async (req, res) => {
+  const userID = req.params.userID
+  const { account } = req.body;
+  try {
+    const result = await userModel.updateOne({ _id: userID }, {
+      $set: {
+        "profile.social_media": account
+      }
+    })
+    if (result.modifiedCount === 1) {
+      const user = await userModel.findById({ _id: userID })
+      if (!user) return res.status(404).json({ message: "user not ound" })
+      const social_media = user.profile.social_media
+      return res.status(200).json({ message: "social-media update successfully", social_media })
+    }
+
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error
+    })
   }
 }

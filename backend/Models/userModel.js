@@ -1,53 +1,65 @@
-import mongoose, { mongo } from "mongoose"
+import mongoose, { mongo } from "mongoose";
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  phone: {
-    type: Number,
-    required: true,
-    unique: true
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  confirmPassword: {
-    type: String,
-    required: true
-  },
-  profile: {
-    firstName: String,
-    lastName: String,
-    birthdate: String,
-    gender: {
+const userSchema = new mongoose.Schema(
+  {
+    name: {
       type: String,
-      enum: ['male', 'female'],
+      required: true,
+      unique:true
     },
-    location: {
-      address: String,
-      country: String,
-      city: String,
-      zipcode: Number
+    phone: {
+      type: Number,
+      required: true,
+      unique: true,
     },
-    bio: String,
-    profile_picture_url: String,
-    social_media: {
-      facebook: String,
-      twitter: String,
-      instagram: String,
-      linkedin: String
-    }
-  }
-}, { timestamps: true })
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    confirmPassword: {
+      type: String,
+      required: true,
+    },
+    verified:{
+      type:Boolean,
+      default:false,
+    },
+    profile: {
+      firstName: String,
+      lastName: String,
+      birthdate: String,
+      gender: {
+        type: String,
+        enum: ["male", "female"],
+      },
+      location: {
+        address: String,
+        country: String,
+        city: String,
+        zipcode: Number,
+      },
+      bio: {
+        type: String,
+      },
+      profile_picture_url: {
+        type: String,
+        default: "",
+      },
+      social_media: [
+        {
+          media: String,
+          URL: String,
+        },
+      ],
+    },
+  },
+  { timestamps: true }
+);
 
-
-const users = mongoose.model('users', userSchema);
+const users = mongoose.model("users", userSchema);
 export default users;

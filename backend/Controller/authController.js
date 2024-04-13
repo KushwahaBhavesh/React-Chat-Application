@@ -1,12 +1,35 @@
 import userModel from "../Models/userModel.js";
 import jwt from "jsonwebtoken";
-
 import bcrypt from "bcrypt";
 import { encryptConfirmPassword, encryptPassword } from "../Utils/authHandler.js";
+import tokensModel from "../Models/authVerifyToken.js";
+import sendEmail from "../Utils/SendEmailConfig.js";
+
+
+export const ChecknameController = async (req, res) => {
+  try {
+    const { name } = req.query
+    console.log(name);
+    const response = await userModel.findOne({ name })
+    if (response) {
+      return res.status(200).json({ message: "name already exist" })
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "error in checkname Controller",
+      error,
+    });
+  }
+}
 
 export const RegisterController = async (req, res) => {
+
   try {
     const { name, phone, email, password, confirmPassword, profile_picture_url } = req.body;
+
+    console.log({ name, phone, email, password, confirmPassword, profile_picture_url }
+    );
 
     if (!name) {
       return res.json({
@@ -37,6 +60,8 @@ export const RegisterController = async (req, res) => {
     // Verifying existing user
     const existingEmail = await userModel.findOne({ email });
     const existingPhone = await userModel.findOne({ phone });
+
+   
     if (existingEmail) {
       return res.status(200).json({
         success: false,
@@ -62,14 +87,21 @@ export const RegisterController = async (req, res) => {
       email,
       password: encryptedPassword,
       confirmPassword: encryptedConfirmPassword,
-      profile: { 
-        profile_picture_url:profile_picture_url 
+      profile: {
+        profile_picture_url: profile_picture_url
       },
     }).save();
 
+
+    const jwtToken = jwt.sign({ userId: user._id }, process.env.EMAIL_TOKEN_SECRET_KEY, { expiresIn: "5m" });
+    const emailVerifyToken = await new tokensModel({ userId: user._id, token: jwtToken }).save()
+    const url = `http://localhost:5173/auth/${user.id}/verify/${emailVerifyToken.token}`;
+
+    await sendEmail(user?.email, "verify Account", url)
+
     return res.status(200).json({
       success: true,
-      message: "User Register Successfully",
+      message: "An Email sent to your account please verify",
       user,
     });
   } catch (error) {
@@ -81,6 +113,38 @@ export const RegisterController = async (req, res) => {
     });
   }
 };
+
+
+// Verify Email
+export const verifyAccountController = async (req, res) => {
+  const userID = req.params.id
+  console.log(userID);
+  try {
+    const user = await userModel.findOne({ _id: userID })
+    if (!user) return res.status(404).json({ message: "User Not Found" });
+
+    const token = await tokensModel.findOne({ userId: user.id, token: req.params.token })
+
+    console.log(token);
+    if (!token) return res.status(404).json({ message: "Invalid link" });
+
+    const response = await userModel.updateOne({ _id: userID }, { "verified": true });
+    if (response.matchedCount === 1) {
+      // await token.remove();
+    }
+
+    return res.status(200).json({ message: "Email verified successfully" });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "error in verify controller",
+      error,
+    });
+  }
+}
+
 
 // /////////////////////
 // Login Controller
@@ -105,6 +169,24 @@ export const LoginController = async (req, res) => {
     if (user) {
       let isPassword = await bcrypt.compare(password, user.password);
       if (isPassword) {
+
+        if (!user?.verified) {
+          let token = await tokensModel.findOne({ userId: user._id });
+
+          if (!token) {
+
+            const jwtToken = jwt.sign({ userId: user._id }, process.env.EMAIL_TOKEN_SECRET_KEY, { expiresIn: "5m" });
+            const emailVerifyToken = await new tokensModel({ userId: user._id, token: jwtToken }).save()
+            const url = `http://localhost:5173/auth/${user.id}/verify/${emailVerifyToken.token}`;
+            await sendEmail(user?.email, "verify Account", url)
+            return res.status(200).json({ message: "An Email sent to your account please verify" })
+          }
+
+          const url = `http://localhost:5173/auth/${user.id}/verify/${token.token}`;
+          await sendEmail(user?.email, "verify Account", url)
+          return res.status(200).json({ message: "An Email sent to your account please verify" })
+        }
+
         // Token Generation
         const accessToken = jwt.sign(
           {

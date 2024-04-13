@@ -1,46 +1,57 @@
+import { FaChevronDown } from "react-icons/fa";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 
-import { FaChevronDown } from 'react-icons/fa';
-import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+const UserMenu = ({ user }) => {
+  // const user = useSelector((state) => state.user.user);
 
-
-const UserMenu = () => {
-  const user = useSelector((state) => state.user.user);
-
-  return <>
-    <div className="card bg-transparent border-0  my-3">
-      <div className="card-body p-4 text-black">
-        <div className="d-flex align-items-center ">
-          <div className="flex-shrink-0">
+  return (
+    <>
+      <div className="card bg-transparent border-0  my-1">
+        <div className="card-body p-2 text-black">
+          <div className="d-flex align-items-center px-2 my-2">
             <img
-              src={user ? user.profile.profile_picture_url : null}
+              src={user ? user?.profile_picture_url : null}
               width="45"
               height="45"
-              alt="Generic placeholder image"
-              className="rounded-circle  mt-3 "
+              alt="Profile image"
+              className="rounded-circle "
             />
-          </div>
-          <div className="flex-grow-1 ms-3 d-flex justify-content-between">
-            <div className="d-flex flex-column">
-              <span className="fs-4 fw-bold mb-0 text-info">
-                {user.name}
-              </span>
-              <p className="m-0">online</p>
-            </div>
-            <div className="dropdown justify-content-center align-items-center d-flex ">
-              <button className="border-0 bg-transparent" data-bs-toggle="dropdown">
-                <FaChevronDown />
-              </button>
-              <ul className="dropdown-menu shadow">
-                <li><Link className="dropdown-item" to="/admin">Dashboard</Link></li>
-                <li><Link className="dropdown-item" to="/">Logout</Link></li>
-              </ul>
+
+            <div className="flex-grow-1 ms-3 d-flex justify-content-between align-items-start">
+              <div
+                className="d-flex flex-column justify-content- align-items-start"
+                style={{ lineHeight: "1px" }}
+              >
+                <p className="fs-5 fw-bold">{user.name}</p>
+                <span className="m-0">online</span>
+              </div>
+              <div className="dropdown justify-content-center align-items-center d-flex ">
+                <button
+                  className="border-0 bg-transparent"
+                  data-bs-toggle="dropdown"
+                >
+                  <FaChevronDown />
+                </button>
+                <ul className="dropdown-menu shadow">
+                  <li>
+                    <Link className="dropdown-item" to="/admin/dashboard">
+                      Dashboard
+                    </Link>
+                  </li>
+                  <li>
+                    <Link className="dropdown-item" to="/">
+                      Logout
+                    </Link>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </>
-}
+    </>
+  );
+};
 
-export default UserMenu
+export default UserMenu;

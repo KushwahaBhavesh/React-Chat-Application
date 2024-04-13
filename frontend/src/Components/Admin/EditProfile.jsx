@@ -6,8 +6,8 @@ import toast from 'react-hot-toast'
 
 import { UPDATE_USER_FAILURE, UPDATE_USER_REQUEST, UPDATE_USER_SUCCESS } from "../../redux/feature/userReducer";
 
-const EditProfile = ({ isOpen, setIsOpen, setUpdate, user }) => {
-  if (!isOpen) return null;
+const EditProfile = ({ setIsOpen, setUpdate, user }) => {
+
   const userID = useSelector(state => state.user.user._id)
   const dispatch = useDispatch();
 
@@ -35,18 +35,24 @@ const EditProfile = ({ isOpen, setIsOpen, setUpdate, user }) => {
 
 
 
+
   axios.defaults.withCredentials = true
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("formData::::", formData);
+
     try {
       dispatch(UPDATE_USER_REQUEST())
       const config = { Headers: { "Content-Type": "application/json" } };
       const { data } = await axios.post(`http://localhost:8000/api/user/profile/edit/${userID}`, formData, config)
-      // console.log(data);
-      dispatch(UPDATE_USER_SUCCESS())
+
+
       if (data) {
+
+        const { name, _id } = data.user
+        const profile_picture_url = data.user.profile.profile_picture_url
+        const payload = { name, _id, profile_picture_url }
+        dispatch(UPDATE_USER_SUCCESS(payload))
         toast.success(data.message);
         setUpdate()
         setIsOpen();
@@ -54,7 +60,6 @@ const EditProfile = ({ isOpen, setIsOpen, setUpdate, user }) => {
         dispatch(UPDATE_USER_FAILURE(data.message))
       }
     } catch (error) {
-      console.log(error);
       dispatch(UPDATE_USER_FAILURE(error))
     }
   }
@@ -63,7 +68,7 @@ const EditProfile = ({ isOpen, setIsOpen, setUpdate, user }) => {
     <>
       <div className="overlay">
         <div
-          className="modal-container rounded-3 shadow bg-light"
+          className="modal-container rounded-3 shadow bg-light p-5"
           style={{ width: "30em" }}
         >
           <div className="modal-body p-2 ">
@@ -122,7 +127,7 @@ const EditProfile = ({ isOpen, setIsOpen, setUpdate, user }) => {
                   />
                   Female
                 </div>
-                <div className="col">
+                <div className="col mt-3">
                   <input
                     type="date"
                     name='DOB'

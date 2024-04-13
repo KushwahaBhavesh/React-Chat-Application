@@ -7,6 +7,7 @@ import cors from 'cors'
 import authRoutes from './Routes/authRoutes.js'
 import messageRoutes from './Routes/messageRoutes.js'
 import usersRoutes from './Routes/usersRoutes.js'
+import groupRoutes from './Routes/groupRoutes.js'
 
 
 
@@ -20,8 +21,17 @@ app.use(morgan("dev"))
 app.use(cors({
   origin: ["http://localhost:5173"],
   methods: ["GET", "POST"],
-  credentials: true
+  credentials: true,
 }))
+// app.use((req, res, next) => {
+//   res.header('Access-Control-Allow-Origin', '*');
+//   res.header('Access-Control-Allow-Headers', '*');
+//   if (req.method === 'OPTIONS') {
+//     res.header('Access-Control-Allow-Methods', 'POST, PUT, GET, DELETE');
+//     return res.status(200).json({})
+//   }
+//   next();
+// })
 
 dotenv.config();
 
@@ -36,8 +46,9 @@ mongoose.connect(process.env.URI)
 
 // routes Api
 app.use('/api/auth', authRoutes)
-app.use('/api/messages', messageRoutes)
-app.use('/api/user',usersRoutes)
+app.use('/api/chat', messageRoutes)
+app.use('/api/user', usersRoutes)
+app.use('/api/group', groupRoutes)
 
 
 

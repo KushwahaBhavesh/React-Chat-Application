@@ -16,7 +16,7 @@ const Register = () => {
   const [cPassowrd, SetCPassword] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  let { isLoading, user ,isError } = useSelector(state => state.user)
+  let { isLoading, user, isError } = useSelector(state => state.user)
 
 
   const handlePasswordView = (e) => {
@@ -45,9 +45,9 @@ const Register = () => {
     const email = emailRef.current.value;
     const password = passwordRef.current.value;
     const confirmPassword = confirmPasswordRef.current.value;
-    const profile_picture_url=`https://api.dicebear.com/8.x/initials/svg?seed=${name}`;
+    const profile_picture_url = `https://api.dicebear.com/8.x/initials/svg?seed=${name}`;
 
-    const userData = { name, phone, email, password, confirmPassword,profile_picture_url};
+    const userData = { name, phone, email, password, confirmPassword, profile_picture_url };
     console.log(userData);
 
     // Form Validation
@@ -62,12 +62,9 @@ const Register = () => {
     } else {
       try {
         dispatch(REGISTER_USER_REQUEST())
-        console.log("request", { isLoading, user });
+
         const config = { Headers: { "Content-Type": "application/json" } };
         const { data } = await axios.post(`http://localhost:8000/api/auth/register`, userData, config);
-
-        // loading console
-
 
         console.log(data);
         if (data && data.success) {
@@ -84,14 +81,28 @@ const Register = () => {
           toast.error(data.message);
         }
       } catch (error) {
-        
+
         dispatch(REGISTER_USER_FAILURE(error))
         toast.error(error);
       }
     }
-    console.log("outer", { isLoading, user });
   };
-  // console.log({isLoading,user});
+
+  const handleNameBlur = async () => {
+    const name = nameRef.current.value
+    if (!name) {
+      return null
+   }
+try{
+   const {data} = await axios.get(`http://localhost:8000/api/auth/checkname?name=${name}`);
+   if(data){
+    toast.error(data.message)
+
+   }
+  }catch(error){
+    toast.error(error)
+  }
+  }
 
   return (
     <>
@@ -116,6 +127,8 @@ const Register = () => {
                     placeholder="User Name"
                     required
                     ref={nameRef}
+                    onBlur={handleNameBlur}
+
                   />
                 </div>
                 <div className="col-lg-10  col-md-8">

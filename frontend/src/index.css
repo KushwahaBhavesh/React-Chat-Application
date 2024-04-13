@@ -7,5 +7,5 @@
 
 html{
   font-size: 90%;
-  overflow: hidden;
+  overflow-y: hidden;
 }

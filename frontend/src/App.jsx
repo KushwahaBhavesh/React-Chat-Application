@@ -9,6 +9,10 @@ import Chat from './Pages/Chat'
 import Dashboard from './Components/Admin/Dashboard'
 import Admin from './Pages/Admin'
 import Profile from './Components/Admin/Profile'
+import AdminAuth from './Pages/AdminAuth'
+import EmailVerify from './Pages/EmailVerify'
+import CreateConversation from './Components/modal/CreateConversation'
+import CreateGroup from './Components/modal/CreateGroup'
 
 const App = () => {
   return <>
@@ -20,7 +24,17 @@ const App = () => {
       <Route path='/' element={<Login />} />
       <Route path='/register' element={<Register />} />
       <Route path='/protected' element={<Dshboard />} />
-      <Route path='/user/chat' element={<Chat />} />
+      <Route path='/user/chat' element={<Chat />}>
+        <Route path='/user/chat/new-chat' element={<CreateConversation/>}/>
+        <Route path='/user/chat/create-group' element={<CreateGroup/>}/>
+      </Route>
+
+
+      <Route path='/adminAuth' element={<AdminAuth />} />
+      <Route path='/auth/:id/verify/:token' element={<EmailVerify />} />
+
+
+
       <Route path='/admin' element={<Admin />}>
         <Route path='/admin/dashboard' element={<Dashboard />} />
         <Route path='/admin/profile' element={<Profile />} />

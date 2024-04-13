@@ -1,30 +1,30 @@
 import UserMenu from "../Components/ChatComponent/UserMenu";
-import SearchInputBox from "../Components/ChatComponent/SearchInputBox";
+
 import Contact from "../Components/ChatComponent/Contact";
 import FloatMenu from "../Components/ChatComponent/FloatMenu";
 import ChatContainer from "../Components/ChatComponent/ChatContainer";
 import UserProfile from "../Components/ChatComponent/UserProfile";
-import { useEffect, useState } from "react";
+
 import { useSelector } from "react-redux";
-import axios from "axios";
-import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+
 
 const Chat = () => {
-  
+  const {isopen}=useSelector(state => state.chat)
+  const { user } = useSelector((state) => state.user);
+  const { selectedUser } = useSelector(state => state.chat)
+
+
+
   return (
     <>
-      <section className="container-fluid  vh-100">
-        <div className="row h-100 gap-3 p-3">
+      <section className="container-fluid vh-100" style={{ background: "#fff" }}>
+        <div className="row vh-100">
           {/* First column */}
-          <div className="col bg-light rounded-4">
+          <div className="col-3 bg-light">
             {/* Profile Avtar */}
-            <UserMenu  />
+            <UserMenu user={user} />
 
-            {/* Search box */}
-            <div className="card-body border-0 my-2">
-              <SearchInputBox />
-            </div>
 
             {/* contact-list */}
             <div className="card bg-transparent border-0 mb-1">
@@ -35,14 +35,15 @@ const Chat = () => {
           </div>
 
           {/* Second column */}
-          <div className="col-6  rounded-4">
+          <div className="col">
             <ChatContainer />
           </div>
 
           {/* third column */}
-          <div className="col-3 bg-light rounded-4">
+          {isopen ? <div className={`col-3 bg-light ${!selectedUser ? "d-none" : ""}`}>
             <UserProfile />
           </div>
+            : null}
         </div>
       </section>
     </>

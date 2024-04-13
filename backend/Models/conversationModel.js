@@ -8,6 +8,8 @@ const conversationSchema = new mongoose.Schema(
         ref: "users",
       },
     ],
+    groupId: { type: mongoose.Schema.Types.ObjectId, ref: "Group" },
+    isGroupChat: { type: Boolean, default: false },
     msg: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -19,7 +21,6 @@ const conversationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+const Conversation = mongoose.model("Conversation", conversationSchema);
 
-const Conversation = mongoose.model('Conversation',conversationSchema);
-
-export default Conversation
+export default Conversation;

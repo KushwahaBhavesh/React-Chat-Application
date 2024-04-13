@@ -20,9 +20,9 @@ const Admin = () => {
   return (
     <>
       <section className="container-fluid bg-light">
-        <div className="row">
+        <div className="row gap-3">
           <div className="col-2 p-2">
-            <div className="d-flex flex-column flex-shrink-0 p-3 vh-100  shadow">
+            <div className="d-flex flex-column flex-shrink-0 p-3 vh-100 position-fixed shadow" style={{width:"inherit"}}>
               <Link
                 to="/"
                 className="d-flex align-items-center mb-3 mt-5 mb-md-0 me-md-auto link-body-emphasis text-decoration-none"
@@ -32,13 +32,12 @@ const Admin = () => {
               <hr />
               <ul className="nav nav-pills flex-column mb-auto gap-2">
                 {sideMenu.map((item, index) => (
-                  <li className="nav-item"   key={index}>
+                  <li className="nav-item" key={index}>
                     <Link
                       to={item.link}
-                    
-                      className={`nav-link ${
-                        active === item.menu ? "active" : ""
-                      }`}
+
+                      className={`nav-link ${active === item.menu ? "active" : ""
+                        }`}
                       aria-current="page"
                       onClick={() => setActive(item.menu)}
                     >
@@ -54,6 +53,9 @@ const Admin = () => {
             </div>
           </div>
           <div className="col p-2 d-flex flex-column">
+            <div className='user profile rounded-2 p-3 shadow' style={{ height: "3.5rem" }}>
+              name
+            </div>
             <div className="user profile mb-2  rounded-2 p-3 shadow">
               {active === "Dashboard" && <Dashboard />}
               {active === "Profile" && <Profile />}

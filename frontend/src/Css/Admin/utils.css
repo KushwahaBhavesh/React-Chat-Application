@@ -1,0 +1,9 @@
+.bio-edit {
+  cursor: pointer;
+  display: none;
+}
+.btn:hover .bio-edit{
+  cursor: pointer;
+  display: block;
+}
+

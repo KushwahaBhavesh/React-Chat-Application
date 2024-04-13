@@ -2,9 +2,7 @@ import React from 'react'
 
 const Dashboard = () => {
   return <>
-    <div className='user profile rounded-2 p-3 shadow' style={{ height: "3.5rem" }}>
-      name
-    </div>
+    
     <div className=' d-flex justify-content-center align-items-center  mt-3 gap-5 mx-5'>
       <div className='card shadow'>
         <div className=' card-body d-flex flex-column'>

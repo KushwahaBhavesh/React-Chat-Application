@@ -16,7 +16,7 @@ const Login = () => {
 
   const [passwordType, SetPasswordType] = useState(false);
   const dispatch = useDispatch()
-  const { isLoading, user } = useSelector(state => state.user)
+  const { isLoading } = useSelector(state => state.user)
 
   const handlePasswordView = (e) => {
     e.preventDefault();
@@ -49,9 +49,10 @@ const Login = () => {
         console.log(data);
 
         if (data && data.success) {
-          const {name,profile,_id} = data.user
-          const user =  {name,profile,_id}
-          dispatch(LOGIN_USER_SUCCESS(user))
+          const {name,_id} = data.user
+          const profile_picture_url = data.user?.profile?.profile_picture_url
+          const payload={name,_id,profile_picture_url}
+          dispatch(LOGIN_USER_SUCCESS(payload))
           toast.success(data.message);
           navigate('/user/chat')
         } else {
