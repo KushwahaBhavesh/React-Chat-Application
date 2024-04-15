@@ -14,8 +14,7 @@ const Contact = () => {
   const userId = useSelector(state => state.user.user._id);
   const { isLoading } = useSelector(state => state.user);
   const { selectedUser } = useSelector(state => state.chat)
-  // const [isFetched, setIsFetched] = useState(false); 
-
+  const { activeUser } = useSelector(state => state.socket)
   const fetchConversation = async () => {
     try {
       dispatch(REQUEST());
@@ -49,6 +48,7 @@ const Contact = () => {
     return user.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
+
   return (
     <>
       <div className="d-flex justify-content-start align-items-center">
@@ -66,17 +66,27 @@ const Contact = () => {
       <ul className="list-group my-2">
         {isLoading ? <LoadingSpinner /> : (
           filteredUsers.map((item, index) => (
-            <li key={index} className="list-group-item d-flex  gap-2 justify-content-between align-items-center bg-light px-3 border-0 border-bottom shadow mb-2 rounded-2"
+            <li
+              key={index}
+              className="list-group-item d-flex gap-2 justify-content-between align-items-center bg-light px-3 border-0 border-bottom shadow mb-2 rounded-2"
               onClick={() => handleOnClick(item)}
-              style={{ cursor: "pointer" }}>
-              <div className='d-flex align-items-center gap-2'>
-                <img
-                  src={item.profile?.profile_picture_url}
-                  alt="Profile"
-                  height={48}
-                  width={48}
-                  className="rounded-circle "
-                />
+              style={{ cursor: "pointer", position: "relative" }} // Add position: relative to parent
+            >
+              <div className='d-flex align-items-center gap-3'>
+                <div style={{ position: "relative" }}> {/* Add position: relative to contain the absolute positioned badge */}
+                  <img
+                    src={item.profile?.profile_picture_url}
+                    alt="Profile"
+                    height={48}
+                    width={48}
+                    className="rounded-circle"
+                  />
+                  {activeUser.some(user => item.receiverId.includes(user.userId)) ? (
+                    <span className="position-absolute translate-middle badge border border-light rounded-circle" style={{ top: "5px", background: "lightgreen", padding: "6px" }}>
+                      <span className="visually-hidden">Online</span>
+                    </span>
+                  ) : null}
+                </div>
                 <div style={{ lineHeight: "0.5" }}>
                   <p className="fs-6 fw-bold">{item.name}</p>
                   <p className="m-0">Latest message</p>

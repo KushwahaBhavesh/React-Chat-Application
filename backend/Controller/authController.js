@@ -61,7 +61,7 @@ export const RegisterController = async (req, res) => {
     const existingEmail = await userModel.findOne({ email });
     const existingPhone = await userModel.findOne({ phone });
 
-   
+
     if (existingEmail) {
       return res.status(200).json({
         success: false,
@@ -193,17 +193,17 @@ export const LoginController = async (req, res) => {
             userId: user.id,
           },
           process.env.USER_SECRET_KEY,
-          { expiresIn: "1m" }
+          { expiresIn: "5m" }
         );
 
         const refreshToken = jwt.sign(
           { userId: user.id },
           process.env.USER_REFRESH_SECRET_KEY,
-          { expiresIn: "5m" }
+          { expiresIn: "30d" }
         );
         res.cookie("accessToken", accessToken, { maxAge: 60000 });
         res.cookie("refreshToken", refreshToken, {
-          maxAge: 300000,
+          maxAge: 30 * 24 * 60 * 60 * 1000,
           httpOnly: true,
         });
 
@@ -232,3 +232,25 @@ export const LoginController = async (req, res) => {
     });
   }
 };
+
+
+
+
+// Logout Controller
+export const LogOutController = (req, res) => {
+  try {
+    return res
+      .clearCookie("refreshToken")
+      .clearCookie("accessToken")
+      .status(200)
+      .json({ success: true, msg: "logout Successfully 😁😁 🍀" });
+
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error,
+    });
+  }
+}

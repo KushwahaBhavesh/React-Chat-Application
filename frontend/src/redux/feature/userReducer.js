@@ -2,7 +2,6 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   user: [],
-  isAuthenticated: false,
   isLoading: false,
   isError: false,
 };
@@ -29,7 +28,6 @@ export const userReducer = createSlice({
     LOGIN_USER_SUCCESS: (state, action) => {
       state.isLoading = false;
       state.user = action.payload;
-      state.isAuthenticated = true;
       (state.isError = false);
     },
     LOGIN_USER_FAILURE: (state) => {
@@ -72,6 +70,9 @@ export const userReducer = createSlice({
       (state.isLoading = false),
         (state.isError = true);
     },
+    LOGOUT_SUCCESS: (state) => {
+      state.user = []
+    }
   }
 });
 
@@ -91,5 +92,6 @@ export const {
   FETCH_ALL_USER_FAILURE,
   FETCH_ALL_USER_REQUEST,
   FETCH_ALL_USER_SUCCESS,
+  LOGOUT_SUCCESS
 } = userReducer.actions;
 export default userReducer.reducer;

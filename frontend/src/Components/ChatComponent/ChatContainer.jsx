@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "../../Css/chat.css";
-import Messagespinner from "../Spinner/messageSpinner";
 import { BsEmojiGrin } from "react-icons/bs";
 import { FaPlus } from "react-icons/fa";
 import { IoSend } from "react-icons/io5";
@@ -10,70 +9,87 @@ import NoConversationFound from "./NoConversationFound";
 import axios from "axios";
 import { Is_OPEN, SELECTE_USER } from "../../redux/feature/chatReducer";
 
+
 const ChatContainer = () => {
   const { selectedUser, chatList } = useSelector((state) => state.chat);
   const [message, setMessage] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const userId = useSelector((state) => state.user.user._id);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
+  const { activeUser, socket } = useSelector((state) => state.socket);
+  const chatContainerRef = useRef(null);
+  const [chatContainerHeight, setChatContainerHeight] = useState(0);
 
+
+
+
+  // handle input change 
   const handleInputChange = (e) => {
     setNewMessage(e.target.value);
   };
 
+
+
+  // sending message to server
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
     try {
-      setLoading(true);
+     
       const config = { headers: { "Content-Type": "application/json" } };
 
-      let msgBody = {}
+      let msgBody = {};
       if (selectedUser.conversationId) {
         msgBody = {
           conversationID: selectedUser.conversationId,
           senderID: userId,
-          msg: newMessage
-        }
+          msg: newMessage,
+          receiverId: selectedUser.receiverId
+        };
       } else {
         // creating new conversation
         msgBody = {
           senderID: userId,
           receiverId: selectedUser._id,
-          msg: newMessage
-        }
+          msg: newMessage,
+        };
       }
 
-      const { data } = await axios.post('http://localhost:8000/api/chat/message/send', msgBody, config);
-      // console.log(data.data);
+      const { data } = await axios.post(
+        "http://localhost:8000/api/chat/message/send",
+        msgBody,
+        config
+      );
+      console.log(data);
       if (data) {
         if (data.data) {
-          data.data.map(item => dispatch(SELECTE_USER(item)))
+          data.data.map((item) => dispatch(SELECTE_USER(item)));
         }
-
         // Update the message state with the newly sent message
-        setMessage([...message, { senderID: userId, msg: newMessage }]);
+        setMessage((prev_msg) => [...prev_msg, { senderID: userId, msg: newMessage }]);
         setNewMessage("");
-
       }
+
     } catch (error) {
       console.log(error);
-    } finally {
-      setLoading(false);
     }
   };
+
+
+  // Socket Realtime message :::==> socket.on
+  useEffect(() => {
+    socket?.on("sendMessage", data => {
+      console.log("received data==>", data);
+      // dispatch(SUCCESS())
+      setMessage((prev_Msg) => [...prev_Msg, { senderID: data.senderID, msg: data.msg }])
+    })
+  }, [socket])
 
   const handleEmojiClick = (emojiObject) => {
     const emoji = emojiObject.emoji;
     setNewMessage(newMessage + emoji);
   };
 
-
-  const toggleEmojiPicker = () => {
-    setShowEmojiPicker((prevState) => !prevState);
-  };
-
-  console.log(message);
+ 
 
   // Fetch message from backend
   useEffect(() => {
@@ -81,36 +97,54 @@ const ChatContainer = () => {
       if (selectedUser && selectedUser.conversationId) {
         const { conversationId } = selectedUser;
         try {
-          setLoading(true);
+         
           const config = { Headers: { "Content-Type": "application/json" } };
           const { data } = await axios.post(
-            `http://localhost:8000/api/chat/message/fetch`, { conversationID: conversationId },
+            `http://localhost:8000/api/chat/message/fetch`,
+            { conversationID: conversationId },
             config
           );
-          console.log(data);
           if (data && data.msg) {
             setMessage(data.msg);
-            setLoading(false);
+           
           }
         } catch (error) {
           console.error("Error fetching messages:", error);
-          setLoading(false);
+          
         }
       } else {
-
-        setMessage([])
+        setMessage([]);
       }
     };
     fetchMessages();
   }, [selectedUser]);
 
+
+
   // Profile Open
   const handleProfileOpen = () => {
-    dispatch(Is_OPEN())
+    dispatch(Is_OPEN());
+  };
+
+
+
+
+// Update chat container height whenever it's rendered
+useEffect(() => {
+  if (chatContainerRef.current) {
+    setChatContainerHeight(chatContainerRef.current.scrollHeight);
   }
+}, [message]);
 
 
-  // updating Selected user after select from new chat
+  // Scroll to bottom of chat container whenever messages change
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerHeight;
+    }
+  }, [message, chatContainerHeight]);
+
+
 
   return (
     <>
@@ -127,23 +161,35 @@ const ChatContainer = () => {
                 onClick={handleProfileOpen}
                 style={{ cursor: "pointer" }}
               />
-              <div className="d-flex flex-column justify-content- align-items-start" style={{ lineHeight: "1px" }}>
-                <p className="fs-5 fw-bold"
+              <div
+                className="d-flex flex-column justify-content- align-items-start"
+                style={{ lineHeight: "3px" }}
+              >
+                <p
+                  className="fs-4 fw-bold"
                   onClick={handleProfileOpen}
                   style={{ cursor: "pointer" }}
-                >{selectedUser?.name}</p>
-                <span className="m-0">online</span>
+                >
+                  {selectedUser?.name}
+                </p>
+
+                {activeUser.includes(selectedUser.receiverId) ? (
+                  <span
+                    className="m-0 fw-semibold"
+                    style={{ color: "#66f", fontSize: "12px" }}
+                  >
+                    online
+                  </span>
+                ) : null}
               </div>
             </div>
 
-            <div className="my-2 p-2 chat-container">
+            <div className="my-2 p-2 chat-container"  ref={chatContainerRef}>
               {selectedUser._id !== chatList.receiverId ? (
                 <div className="d-flex justify-content-center align-items-center h-100 message">
                   <h1>Welcome New User</h1>
                 </div>
-              ) : loading ? (
-                <Messagespinner />
-              ) : message && message.length === 0 ? (
+              ) :  message && message.length === 0 ? (
                 <div className="d-flex justify-content-center align-items-center h-100 message">
                   <h1>No Message Found</h1>
                 </div>
@@ -151,7 +197,10 @@ const ChatContainer = () => {
                 <div className="mx-1">
                   {message.map((item, index) => (
                     <div className="d-flex" key={index}>
-                      <div className={`${item.senderID === userId ? "sender" : "receiver"} shadow-sm  px-3`}>
+                      <div
+                        className={`${item.senderID === userId ? "sender" : "receiver"
+                          } shadow-sm `}
+                      >
                         <span className="msg">{item.msg}</span>
                       </div>
                     </div>
@@ -160,22 +209,29 @@ const ChatContainer = () => {
               )}
             </div>
 
-
             <div className="card-body p-0 bg-light mt-2 mx-5 rounded-pill border d-flex align-items-center shadow">
               <div className="d-flex ms-4 gap-2">
                 <button className="p-2 btn border-0">
                   <FaPlus className="fs-3" />
                 </button>
-                <button className="p-2 btn border-0" onClick={toggleEmojiPicker}>
+                
                   <div className="dropup">
-                    <button type="button" className="btn fs-3 border-0 d-flex justify-content-center align-items-center" data-bs-toggle="dropdown">
+                    <button
+                      type="button"
+                      className="btn fs-3 border-0 d-flex justify-content-center align-items-center"
+                      data-bs-toggle="dropdown"
+                    >
                       <BsEmojiGrin />
                     </button>
                     <ul className="dropdown-menu">
-                      <EmojiPicker width="350px" height="350px" onEmojiClick={handleEmojiClick} />
+                      <EmojiPicker
+                        width="350px"
+                        height="350px"
+                        onEmojiClick={handleEmojiClick}
+                      />
                     </ul>
                   </div>
-                </button>
+
               </div>
               <input
                 type="text"
@@ -189,7 +245,6 @@ const ChatContainer = () => {
               </button>
             </div>
           </div>
-
         </div>
       ) : (
         <NoConversationFound />

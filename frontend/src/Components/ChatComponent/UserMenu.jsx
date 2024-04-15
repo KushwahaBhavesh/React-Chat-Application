@@ -1,9 +1,31 @@
+import axios from "axios";
 import { FaChevronDown } from "react-icons/fa";
-import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { LOGOUT } from "../../redux/feature/authReducer";
+import { LOGOUT_SUCCESS } from "../../redux/feature/userReducer";
+import { LOGOUT_CLOSE } from "../../redux/feature/chatReducer";
 
 const UserMenu = ({ user }) => {
   // const user = useSelector((state) => state.user.user);
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+
+  const handleLogout = () => {
+    try {
+      axios
+        .get("http://localhost:8000/api/auth/logout")
+        .then((res) => {
+          if (res.data && res.data.success) {
+            dispatch(LOGOUT())
+            dispatch(LOGOUT_SUCCESS())
+            dispatch(LOGOUT_CLOSE())
+            navigate('/')
+          }
+        })
+        .catch((error) => console.log(error));
+    } catch (error) { }
+  };
 
   return (
     <>
@@ -40,7 +62,7 @@ const UserMenu = ({ user }) => {
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item" to="/">
+                    <Link className="dropdown-item" onClick={handleLogout}>
                       Logout
                     </Link>
                   </li>

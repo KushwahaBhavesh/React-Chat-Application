@@ -25,7 +25,6 @@ const FloatMenu = () => {
         `http://localhost:8000/api/chat/search/user`,
         config
       );
-      console.log(data);
       if (data) {
         const { allUser } = data;
         dispatch(FETCH_ALL_USER_SUCCESS());
@@ -41,7 +40,7 @@ const FloatMenu = () => {
     if (allUsers.length === 0) {
       fetchAllUser();
     }
-    setIsOpen(!isOpen);
+    setIsOpen(!isOpen); 
   }, [])
 
   return (

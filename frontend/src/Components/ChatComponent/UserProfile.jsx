@@ -12,6 +12,7 @@ const UserProfile = () => {
   const dispatch = useDispatch();
   const [info, setInfo] = useState([]);
   const [error, setError] = useState(null); // Add error state
+  const { activeUser } = useSelector(state => state.socket)
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -38,6 +39,7 @@ const UserProfile = () => {
     dispatch(Is_CLOSE());
   };
 
+  console.log(info);
   return (
     <div className="card mt-3 border-0 bg-transparent">
       <div className="d-flex justify-content-between align-items-center px-3 border-bottom">
@@ -46,9 +48,9 @@ const UserProfile = () => {
         <button
           onClick={handleCloseBtn}
           className="btn "
-        ><IoClose 
-          fontSize={30}
-        />  </button>
+        ><IoClose
+            fontSize={30}
+          />  </button>
 
       </div>
       {info.length === 0 ? (
@@ -57,14 +59,22 @@ const UserProfile = () => {
         info.map((item, index) => (
           <div key={index} className="profile-Container">
             <div className="card-body mb-0 text-center">
-              <img
-                src={item.profile?.profile_picture_url}
-                alt="ProfileIMG"
-                width="180px"
-                height="180px"
-                style={{ objectFit: "cover" }}
-                className="rounded-circle"
-              />
+
+              <div className="position-relative"> {/* Add position: relative to contain the absolute positioned badge */}
+                <img
+                  src={item.profile?.profile_picture_url}
+                  alt="ProfileIMG"
+                  width="180px"
+                  height="180px"
+                  style={{ objectFit: "cover" }}
+                  className="rounded-circle"
+                />
+                {activeUser.includes(item._id) ? (
+                  <span className="position-absolute translate-middle badge border border-light rounded-circle" style={{ left:"15rem",top:"1rem", background: "lightgreen", padding: "12px" }}>
+                    <span className="visually-hidden">Online</span>
+                  </span>
+                ) : null}
+              </div>
               <h5 className="mt-2 fs-2 lh-1">@{item.name}</h5>
               <div className="d-flex align-items-center justify-content-center fs-4 fw-bold">
                 <span>{item.profile?.firstName}</span>

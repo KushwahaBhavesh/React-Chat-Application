@@ -35,7 +35,14 @@ const chatReducer = createSlice({
     },
     Is_CLOSE: (state) => {
       state.isopen = false;
+    },
+    LOGOUT_CLOSE: (state) => {
+      state.chatList = [],
+      state.selectedUser=null
+
+
     }
+
   }
 })
 
@@ -43,7 +50,7 @@ export const {
   SELECTE_USER,
   SET_CONVERSATION,
   REQUEST, SUCCESS, FAILURE,
-  Is_CLOSE,Is_OPEN
+  Is_CLOSE, Is_OPEN,LOGOUT_CLOSE
 } = chatReducer.actions;
 
 export default chatReducer.reducer

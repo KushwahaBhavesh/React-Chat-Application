@@ -2,11 +2,11 @@ import jwt from "jsonwebtoken";
 
 export const verifyToken = async (req, res, next) => {
   const accessToken = req.cookies.accessToken;
-  console.log(accessToken);
+  
 
   if (!accessToken) {
     const refreshToken = req.cookies.refreshToken;
-    console.log(refreshToken);
+    
     let exit = false;
 
     if (!refreshToken) {

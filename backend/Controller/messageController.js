@@ -1,7 +1,8 @@
-import { set } from "mongoose";
+
 import Conversation from "../Models/conversationModel.js";
 import Messages from "../Models/messageModel.js";
 import userModel from "../Models/userModel.js";
+import { getReceiverSocketId, io } from '../socket/socket.js'
 
 
 // Find all users
@@ -18,7 +19,6 @@ export const fetchUserController = async (req, res) => {
 
   }
 };
-
 
 
 // create conversation 
@@ -41,10 +41,22 @@ export const CreateConversation = async (req, res) => {
 // Send messages
 export const SendMessageController = async (req, res) => {
   const { conversationID, senderID, msg, receiverId } = req.body
+  console.log("ReceiverID", receiverId);
   let data = []
   try {
     if (!conversationID) {
       const newConversation = await new Conversation({ participants: [senderID, receiverId] }).save();
+
+      // Socket IO implementation
+      const receiverSocket = getReceiverSocketId(receiverId)
+      if (receiverSocket) {
+        io.to(receiverSocket).emit("sendMessage", {
+          conversationID,
+          receiverId,
+          senderID,
+          msg
+        })
+      }
 
       if (newConversation) {
         console.log("conversation created");
@@ -54,7 +66,12 @@ export const SendMessageController = async (req, res) => {
           msg
         }).save();
         if (newMsg) {
-          console.log("message created");
+          // Socket IO implementation
+          const receiverSocket = getReceiverSocketId(receiverId)
+          if (receiverSocket) {
+            io.to(receiverSocket).emit("sendMessage", newMsg)
+            console.log('new conversation');
+          }
           const user = await userModel.findById(receiverId)
           data.push({
             conversationId: newConversation._id,
@@ -63,10 +80,11 @@ export const SendMessageController = async (req, res) => {
             phone: user.phone,
             profile: {
               profile_picture_url: user.profile?.profile_picture_url,
-            }
+            },
 
           })
-          return res.status(200).json({data})
+          return res.status(200).json({ data })
+
         }
       }
 
@@ -78,7 +96,17 @@ export const SendMessageController = async (req, res) => {
         msg
       }).save();
       if (newMsg) {
-        return res.status(200).json({ message: "Message created" })
+        newMsg.then(newMessage => {
+          // Socket IO implementation
+          const receiverSocket = getReceiverSocketId(receiverId)
+          if (receiverSocket) {
+            io.to(receiverSocket).emit("sendMessage", newMessage)
+            console.log('old conversation');
+          }
+          return res.status(200).json({ message: "Message created", msg: newMessage })
+        }).catch(error => {
+          console.log(error);
+        });
       }
     }
 

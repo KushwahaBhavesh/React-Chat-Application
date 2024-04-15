@@ -3,7 +3,6 @@ import Register from './Pages/Register'
 import Login from './Pages/Login'
 import { Toaster } from 'react-hot-toast'
 import { Route, Routes } from 'react-router-dom'
-import Dshboard from './Pages/dshboard'
 import NotFound from './Components/NotFound/NotFound'
 import Chat from './Pages/Chat'
 import Dashboard from './Components/Admin/Dashboard'
@@ -23,7 +22,6 @@ const App = () => {
       <Route path='*' element={<NotFound />} />
       <Route path='/' element={<Login />} />
       <Route path='/register' element={<Register />} />
-      <Route path='/protected' element={<Dshboard />} />
       <Route path='/user/chat' element={<Chat />}>
         <Route path='/user/chat/new-chat' element={<CreateConversation/>}/>
         <Route path='/user/chat/create-group' element={<CreateGroup/>}/>

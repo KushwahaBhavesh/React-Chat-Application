@@ -8,12 +8,13 @@ import authRoutes from './Routes/authRoutes.js'
 import messageRoutes from './Routes/messageRoutes.js'
 import usersRoutes from './Routes/usersRoutes.js'
 import groupRoutes from './Routes/groupRoutes.js'
+import { app, server } from './socket/socket.js';
 
 
 
 
 // middlewares
-const app = express();
+// const app = express();
 
 app.use(cookieParser());
 app.use(express.json())
@@ -59,6 +60,6 @@ app.get('/', (req, res) => {
 
 
 const PORT = process.env.PORT || 8000
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log("server running")
 })

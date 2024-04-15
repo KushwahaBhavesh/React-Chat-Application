@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../Css/register.css";
 import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
@@ -17,6 +17,7 @@ const Login = () => {
   const [passwordType, SetPasswordType] = useState(false);
   const dispatch = useDispatch()
   const { isLoading } = useSelector(state => state.user)
+  const { isAuthenticated } = useSelector(state => state.auth)
 
   const handlePasswordView = (e) => {
     e.preventDefault();
@@ -49,9 +50,9 @@ const Login = () => {
         console.log(data);
 
         if (data && data.success) {
-          const {name,_id} = data.user
+          const { name, _id } = data.user
           const profile_picture_url = data.user?.profile?.profile_picture_url
-          const payload={name,_id,profile_picture_url}
+          const payload = { name, _id, profile_picture_url }
           dispatch(LOGIN_USER_SUCCESS(payload))
           toast.success(data.message);
           navigate('/user/chat')
@@ -66,72 +67,78 @@ const Login = () => {
     }
   };
 
+  useEffect(() => {
+{isAuthenticated ? navigate('/user/chat') : null}
+  },[isAuthenticated])
+
   return (
     <>
-    {isLoading ? <LoadingSpinner/> :(
-      <section className="container-fluid bg-warning vh-100">
-        <div className="box-1"></div>
-        <div className="box-2"></div>
+    {isAuthenticated ? null :(
+      isLoading ? <LoadingSpinner /> : (
+        <section className="container-fluid bg-warning vh-100">
+          <div className="box-1"></div>
+          <div className="box-2"></div>
 
-        <div className="row row-cols-2 d-flex justify-content-center align-items-center vh-100">
-          {/* Registration Page */}
-          <div className="form-className col d-flex justify-content-center align-items-center border-0">
-            <form
-              className="form-control w-50 py-5 bg-light rounded-5"
-              onSubmit={handleFormSubmit}
-            >
-              <div className="row g-3  d-flex flex-column justify-content-center align-items-center">
-                <h3 className="text-center fw-bolder ">Login</h3>
+          <div className="row row-cols-2 d-flex justify-content-center align-items-center vh-100">
+            {/* Registration Page */}
+            <div className="form-className col d-flex justify-content-center align-items-center border-0">
+              <form
+                className="form-control w-50 py-5 bg-light rounded-5"
+                onSubmit={handleFormSubmit}
+              >
+                <div className="row g-3  d-flex flex-column justify-content-center align-items-center">
+                  <h3 className="text-center fw-bolder ">Login</h3>
 
-                <div className="col-lg-10  col-md-6">
-                  <input
-                    type="email"
-                    className="form-control p-3"
-                    placeholder="abc@gmail.com "
-                    ref={emaiRef}
-                  />
-                </div>
+                  <div className="col-lg-10  col-md-6">
+                    <input
+                      type="email"
+                      className="form-control p-3"
+                      placeholder="abc@gmail.com "
+                      ref={emaiRef}
+                    />
+                  </div>
 
-                <div className="col-lg-10  col-md-6 position-relative align-items-center justify-content-center d-flex">
-                  <input
-                    type={passwordType ? "text" : "password"}
-                    className="form-control  p-3 position-relative"
-                    placeholder="Password"
-                    ref={passwordRef}
-                    required
-                  />
-                  <button
-                    className=" border-0 bg-white fs-3 p-1 position-absolute end-0 mx-3"
-                    onClick={handlePasswordView}
-                  >
-                    {passwordType ? <IoEye /> : <BiSolidHide />}
-                  </button>
-                </div>
-
-                <div className="col-lg-10  col-md-6 mb-3">
-                  <button className="btn btn-primary w-100">Login</button>
-                </div>
-                <div className="col-lg-10 col-md-6 position-relative">
-                  <span className="position-absolute bottom-0 end-0 ">
-                    Forgot password ?
-                  </span>
-                </div>
-                <div className="col-lg-10 col-md-6 text-center mt-5">
-                  <span className="">Not Have Account </span>
-                </div>
-                <div className="col-lg-10 col-md-6 text-center">
-                  <Link to="/register">
-                    <button className="btn btn-primary w-100">
-                      Create new Account
+                  <div className="col-lg-10  col-md-6 position-relative align-items-center justify-content-center d-flex">
+                    <input
+                      type={passwordType ? "text" : "password"}
+                      className="form-control  p-3 position-relative"
+                      placeholder="Password"
+                      ref={passwordRef}
+                      required
+                    />
+                    <button
+                      className=" border-0 bg-white fs-3 p-1 position-absolute end-0 mx-3"
+                      onClick={handlePasswordView}
+                    >
+                      {passwordType ? <IoEye /> : <BiSolidHide />}
                     </button>
-                  </Link>
+                  </div>
+
+                  <div className="col-lg-10  col-md-6 mb-3">
+                    <button className="btn btn-primary w-100">Login</button>
+                  </div>
+                  <div className="col-lg-10 col-md-6 position-relative">
+                    <span className="position-absolute bottom-0 end-0 ">
+                      Forgot password ?
+                    </span>
+                  </div>
+                  <div className="col-lg-10 col-md-6 text-center mt-5">
+                    <span className="">Not Have Account </span>
+                  </div>
+                  <div className="col-lg-10 col-md-6 text-center">
+                    <Link to="/register">
+                      <button className="btn btn-primary w-100">
+                        Create new Account
+                      </button>
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
-        </div>
-      </section>
-      )}
+        </section>
+
+      ))}
     </>
   );
 };
