@@ -7,7 +7,7 @@ import EmojiPicker from "emoji-picker-react";
 import { useDispatch, useSelector } from "react-redux";
 import NoConversationFound from "./NoConversationFound";
 import axios from "axios";
-import { Is_OPEN, SELECTE_USER } from "../../redux/feature/chatReducer";
+import { Is_OPEN, SELECTE_USER, SUCCESS } from "../../redux/feature/chatReducer";
 
 
 const ChatContainer = () => {
@@ -77,10 +77,12 @@ const ChatContainer = () => {
 
   // Socket Realtime message :::==> socket.on
   useEffect(() => {
-    socket?.on("sendMessage", data => {
-      console.log("received data==>", data);
-      // dispatch(SUCCESS())
+    socket?.on("sendMessage", receiver_data => {
+      console.log("received data==>", receiver_data);
+      
+      console.log(receiver_data);
       setMessage((prev_Msg) => [...prev_Msg, { senderID: data.senderID, msg: data.msg }])
+      // dispatch(SUCCESS(data))
     })
   }, [socket])
 

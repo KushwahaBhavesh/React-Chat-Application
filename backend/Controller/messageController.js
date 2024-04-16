@@ -5,6 +5,27 @@ import userModel from "../Models/userModel.js";
 import { getReceiverSocketId, io } from '../socket/socket.js'
 
 
+// Socket Implementation
+const getSocketRefrence = (newMsg, receiverId) => {
+  const messageBuffer = {}
+  const receiverSocket = getReceiverSocketId(receiverId)
+  console.log(receiverSocket);
+  if (receiverSocket) {
+    io.to(receiverSocket).emit("sendMessage", newMsg)
+  } else {
+    if (!messageBuffer[receiverId]) {
+      messageBuffer[receiverId] = []
+    }
+    messageBuffer[receiverId].push({ newMsg })
+    // Emit a notification message to the specific user's socket
+    io.to(receiverId).emit("Notification", () => {
+      messgae: "you have a nnew nessafe"
+    })
+  }
+}
+
+
+
 // Find all users
 export const fetchUserController = async (req, res) => {
   const { userId } = req.params
@@ -47,16 +68,7 @@ export const SendMessageController = async (req, res) => {
     if (!conversationID) {
       const newConversation = await new Conversation({ participants: [senderID, receiverId] }).save();
 
-      // Socket IO implementation
-      const receiverSocket = getReceiverSocketId(receiverId)
-      if (receiverSocket) {
-        io.to(receiverSocket).emit("sendMessage", {
-          conversationID,
-          receiverId,
-          senderID,
-          msg
-        })
-      }
+
 
       if (newConversation) {
         console.log("conversation created");
@@ -66,12 +78,16 @@ export const SendMessageController = async (req, res) => {
           msg
         }).save();
         if (newMsg) {
-          // Socket IO implementation
-          const receiverSocket = getReceiverSocketId(receiverId)
-          if (receiverSocket) {
-            io.to(receiverSocket).emit("sendMessage", newMsg)
-            console.log('new conversation');
-          }
+
+          // **********************************//
+          // Socket IO implementation //
+          //**********************************//
+          // const receiverSocket = getReceiverSocketId(receiverId)
+          // if (receiverSocket) {
+          //   io.to(receiverSocket).emit("sendMessage", newMsg)
+          //   console.log('new conversation');
+          // }
+
           const user = await userModel.findById(receiverId)
           data.push({
             conversationId: newConversation._id,
@@ -81,8 +97,11 @@ export const SendMessageController = async (req, res) => {
             profile: {
               profile_picture_url: user.profile?.profile_picture_url,
             },
+            msg: newMsg.msg
 
           })
+          const newData = Object.fromEntries(data)
+          getSocketRefrence(newData, receiverId)
           return res.status(200).json({ data })
 
         }
@@ -97,12 +116,13 @@ export const SendMessageController = async (req, res) => {
       }).save();
       if (newMsg) {
         newMsg.then(newMessage => {
-          // Socket IO implementation
-          const receiverSocket = getReceiverSocketId(receiverId)
-          if (receiverSocket) {
-            io.to(receiverSocket).emit("sendMessage", newMessage)
-            console.log('old conversation');
-          }
+          // // Socket IO implementation
+          // const receiverSocket = getReceiverSocketId(receiverId)
+          // if (receiverSocket) {
+          //   io.to(receiverSocket).emit("sendMessage", newMessage)
+          // }
+          // const newMsgObj = {...newMessage,receiverId:receiverId}
+          getSocketRefrence(newMessage, receiverId);
           return res.status(200).json({ message: "Message created", msg: newMessage })
         }).catch(error => {
           console.log(error);
