@@ -6,6 +6,7 @@ import userReducer from "./feature/userReducer";
 import chatReducer from "./feature/chatReducer";
 import authReducer from "./feature/authReducer";
 import socketReducer from "./feature/socketReducer";
+import messageReducer from "./feature/messageReducer";
 
 const persistConfig = {
   key: 'WebChatUserDetails',
@@ -31,6 +32,7 @@ export const store = configureStore({
     chat: PersistChatReducer,
     auth: persistAuthReducer,
     socket: socketReducer,
+    message: messageReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

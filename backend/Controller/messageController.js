@@ -7,20 +7,11 @@ import { getReceiverSocketId, io } from '../socket/socket.js'
 
 // Socket Implementation
 const getSocketRefrence = (newMsg, receiverId) => {
-  const messageBuffer = {}
+ 
   const receiverSocket = getReceiverSocketId(receiverId)
-  console.log(receiverSocket);
+  console.log(receiverSocket,newMsg);
   if (receiverSocket) {
     io.to(receiverSocket).emit("sendMessage", newMsg)
-  } else {
-    if (!messageBuffer[receiverId]) {
-      messageBuffer[receiverId] = []
-    }
-    messageBuffer[receiverId].push({ newMsg })
-    // Emit a notification message to the specific user's socket
-    io.to(receiverId).emit("Notification", () => {
-      messgae: "you have a nnew nessafe"
-    })
   }
 }
 
@@ -79,14 +70,20 @@ export const SendMessageController = async (req, res) => {
         }).save();
         if (newMsg) {
 
-          // **********************************//
-          // Socket IO implementation //
-          //**********************************//
-          // const receiverSocket = getReceiverSocketId(receiverId)
-          // if (receiverSocket) {
-          //   io.to(receiverSocket).emit("sendMessage", newMsg)
-          //   console.log('new conversation');
-          // }
+          const userProfile = await userModel.findById(senderID);
+          const New_Convo_Data = {
+            conversationId: newMsg?.conversationID.toString(),
+            senderId: newMsg?.senderID.toString(),
+            name: userProfile?.name,
+            profile: {
+              profile_picture_url: userProfile?.profile?.profile_picture_url
+            },
+            msg: newMsg.msg
+          }
+
+          getSocketRefrence(New_Convo_Data, receiverId)
+
+
 
           const user = await userModel.findById(receiverId)
           data.push({
@@ -97,11 +94,7 @@ export const SendMessageController = async (req, res) => {
             profile: {
               profile_picture_url: user.profile?.profile_picture_url,
             },
-            msg: newMsg.msg
-
           })
-          const newData = Object.fromEntries(data)
-          getSocketRefrence(newData, receiverId)
           return res.status(200).json({ data })
 
         }
@@ -109,24 +102,24 @@ export const SendMessageController = async (req, res) => {
 
       return res.json({ message: "message" })
     } else {
-      const newMsg = new Messages({
+      const newMsg = await new Messages({
         conversationID,
         senderID,
         msg
       }).save();
       if (newMsg) {
-        newMsg.then(newMessage => {
-          // // Socket IO implementation
-          // const receiverSocket = getReceiverSocketId(receiverId)
-          // if (receiverSocket) {
-          //   io.to(receiverSocket).emit("sendMessage", newMessage)
-          // }
-          // const newMsgObj = {...newMessage,receiverId:receiverId}
-          getSocketRefrence(newMessage, receiverId);
-          return res.status(200).json({ message: "Message created", msg: newMessage })
-        }).catch(error => {
-          console.log(error);
-        });
+        const user = await userModel.findById(senderID);
+        const New_Convo_Data = {
+          conversationId: newMsg?.conversationID.toString(),
+          senderId: newMsg?.senderID.toString(),
+          msg: newMsg.msg,
+          name: user.name,
+          profile: {
+            profile_picture_url: user.profile?.profile_picture_url
+          }
+        }
+        getSocketRefrence(New_Convo_Data, receiverId)
+        return res.status(200).json(newMsg)
       }
     }
 
@@ -176,9 +169,10 @@ export const FetchConversationController = async (req, res) => {
     const conversations = await Conversation.find({ participants: { $in: userId } });
     const receiverIdSet = new Set();
     const data = [];
-
+    console.log(conversations);
     for (const conversation of conversations) {
-      const receiverId = conversation.participants.find(participant => participant.toString() !== userId).toString();
+      const receiverId = conversation.participants.find(participant => participant.toString() !== userId).toString()
+      console.log(receiverId);
       if (!receiverIdSet.has(receiverId)) {
         const user = await userModel.findById(receiverId)
         data.push({

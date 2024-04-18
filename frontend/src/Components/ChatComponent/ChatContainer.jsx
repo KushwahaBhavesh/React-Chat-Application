@@ -8,17 +8,20 @@ import { useDispatch, useSelector } from "react-redux";
 import NoConversationFound from "./NoConversationFound";
 import axios from "axios";
 import { Is_OPEN, SELECTE_USER, SUCCESS } from "../../redux/feature/chatReducer";
+import { SET_MESSAGE, SET_NOTIFICATION } from "../../redux/feature/messageReducer";
 
 
 const ChatContainer = () => {
-  const { selectedUser, chatList } = useSelector((state) => state.chat);
-  const [message, setMessage] = useState([]);
+  const { message, notification } = useSelector(state => state.message)
   const [newMessage, setNewMessage] = useState("");
   const userId = useSelector((state) => state.user.user._id);
   const dispatch = useDispatch();
   const { activeUser, socket } = useSelector((state) => state.socket);
   const chatContainerRef = useRef(null);
   const [chatContainerHeight, setChatContainerHeight] = useState(0);
+  const { selectedUser, chatList } = useSelector((state) => state.chat);
+  const [data, setData] = useState()
+
 
 
 
@@ -34,7 +37,7 @@ const ChatContainer = () => {
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
     try {
-     
+
       const config = { headers: { "Content-Type": "application/json" } };
 
       let msgBody = {};
@@ -59,13 +62,14 @@ const ChatContainer = () => {
         msgBody,
         config
       );
-      console.log(data);
+
       if (data) {
         if (data.data) {
+          // updating selectedUser
           data.data.map((item) => dispatch(SELECTE_USER(item)));
         }
         // Update the message state with the newly sent message
-        setMessage((prev_msg) => [...prev_msg, { senderID: userId, msg: newMessage }]);
+        dispatch(SET_MESSAGE([...message, { senderID: userId, msg: newMessage }]));
         setNewMessage("");
       }
 
@@ -74,24 +78,37 @@ const ChatContainer = () => {
     }
   };
 
-
   // Socket Realtime message :::==> socket.on
   useEffect(() => {
     socket?.on("sendMessage", receiver_data => {
-      console.log("received data==>", receiver_data);
+      console.log((!selectedUser || (selectedUser._id || selectedUser.receiverId !== receiver_data.senderId)));
+      console.log(receiver_data.senderId);
       
-      console.log(receiver_data);
-      setMessage((prev_Msg) => [...prev_Msg, { senderID: data.senderID, msg: data.msg }])
-      // dispatch(SUCCESS(data))
+      const conversationExists = chatList.some(conversation => conversation.conversationId === receiver_data.conversationId);
+      
+
+      if (!selectedUser || (selectedUser._id || selectedUser.receiverId !== receiver_data.senderId)) {
+        if (!notification.includes(receiver_data)) {
+          dispatch(SET_NOTIFICATION([receiver_data, ...notification]))
+        }
+      }
+
+      if (!conversationExists) {
+        const New_conversation = [...chatList, receiver_data]
+        dispatch(SUCCESS(New_conversation))
+        dispatch(SET_MESSAGE([...message, { conversationId: receiver_data.conversationId, senderId: receiver_data.senderId, msg: receiver_data.msg }]))
+      } else {
+        dispatch(SET_MESSAGE([...message, { conversationId: receiver_data.conversationId, senderId: receiver_data.senderId, msg: receiver_data.msg }]))
+      }
+
     })
-  }, [socket])
+  }, [socket, message])
 
   const handleEmojiClick = (emojiObject) => {
     const emoji = emojiObject.emoji;
     setNewMessage(newMessage + emoji);
   };
 
- 
 
   // Fetch message from backend
   useEffect(() => {
@@ -99,7 +116,7 @@ const ChatContainer = () => {
       if (selectedUser && selectedUser.conversationId) {
         const { conversationId } = selectedUser;
         try {
-         
+
           const config = { Headers: { "Content-Type": "application/json" } };
           const { data } = await axios.post(
             `http://localhost:8000/api/chat/message/fetch`,
@@ -107,15 +124,14 @@ const ChatContainer = () => {
             config
           );
           if (data && data.msg) {
-            setMessage(data.msg);
-           
+            dispatch(SET_MESSAGE(data.msg))
+
           }
         } catch (error) {
           console.error("Error fetching messages:", error);
-          
         }
       } else {
-        setMessage([]);
+        // 
       }
     };
     fetchMessages();
@@ -129,14 +145,19 @@ const ChatContainer = () => {
   };
 
 
+  useEffect(() => {
+    const data = message.some(item => item.senderId !== selectedUser?.receiverId)
+    setData(data)
+  }, [message])
 
 
-// Update chat container height whenever it's rendered
-useEffect(() => {
-  if (chatContainerRef.current) {
-    setChatContainerHeight(chatContainerRef.current.scrollHeight);
-  }
-}, [message]);
+
+  // Update chat container height whenever it's rendered
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      setChatContainerHeight(chatContainerRef.current.scrollHeight);
+    }
+  }, [message]);
 
 
   // Scroll to bottom of chat container whenever messages change
@@ -175,7 +196,7 @@ useEffect(() => {
                   {selectedUser?.name}
                 </p>
 
-                {activeUser.includes(selectedUser.receiverId) ? (
+                {activeUser.some(user => user.userId === (selectedUser._id || selectedUser.receiverId)) ? (
                   <span
                     className="m-0 fw-semibold"
                     style={{ color: "#66f", fontSize: "12px" }}
@@ -186,12 +207,14 @@ useEffect(() => {
               </div>
             </div>
 
-            <div className="my-2 p-2 chat-container"  ref={chatContainerRef}>
+
+            {/* chat Container */}
+            <div className="my-2 p-2 chat-container" ref={chatContainerRef}>
               {selectedUser._id !== chatList.receiverId ? (
                 <div className="d-flex justify-content-center align-items-center h-100 message">
                   <h1>Welcome New User</h1>
                 </div>
-              ) :  message && message.length === 0 ? (
+              ) : message?.length === 0 ? (
                 <div className="d-flex justify-content-center align-items-center h-100 message">
                   <h1>No Message Found</h1>
                 </div>
@@ -211,28 +234,40 @@ useEffect(() => {
               )}
             </div>
 
+
+            {/* Input Container */}
             <div className="card-body p-0 bg-light mt-2 mx-5 rounded-pill border d-flex align-items-center shadow">
-              <div className="d-flex ms-4 gap-2">
-                <button className="p-2 btn border-0">
-                  <FaPlus className="fs-3" />
-                </button>
-                
-                  <div className="dropup">
-                    <button
-                      type="button"
-                      className="btn fs-3 border-0 d-flex justify-content-center align-items-center"
-                      data-bs-toggle="dropdown"
-                    >
-                      <BsEmojiGrin />
-                    </button>
-                    <ul className="dropdown-menu">
-                      <EmojiPicker
-                        width="350px"
-                        height="350px"
-                        onEmojiClick={handleEmojiClick}
-                      />
-                    </ul>
-                  </div>
+              <div className="d-flex ms-4 gap-2 dropup">
+                <div className="dropdown">
+                  <button className="p-2 btn border-0" type="button" data-bs-toggle="dropdown">
+                    <FaPlus className="fs-3" />
+                  </button>
+                  <ul className="dropdown-menu">
+                    <li><label className="dropdown-item" htmlFor="document">Document</label></li>
+                    <li><label className="dropdown-item" htmlFor="photo">Photo</label></li>
+                    <li><label className="dropdown-item" htmlFor="audio">Audio</label></li>
+                  </ul>
+                </div>
+                <input id="document" type="file" accept=".pdf,.doc,.ppt,.pptx" style={{ display: 'none' }} />
+                <input id="photo" type="file" accept=".jpeg,.jpg,.png" style={{ display: 'none' }} />
+                <input id="audio" type="file" accept=".mp4" style={{ display: 'none' }} />
+
+                <div className="dropup">
+                  <button
+                    type="button"
+                    className="btn fs-3 border-0 d-flex justify-content-center align-items-center"
+                    data-bs-toggle="dropdown"
+                  >
+                    <BsEmojiGrin />
+                  </button>
+                  <ul className="dropdown-menu">
+                    <EmojiPicker
+                      width="350px"
+                      height="350px"
+                      onEmojiClick={handleEmojiClick}
+                    />
+                  </ul>
+                </div>
 
               </div>
               <input

@@ -8,6 +8,7 @@ import authRoutes from './Routes/authRoutes.js'
 import messageRoutes from './Routes/messageRoutes.js'
 import usersRoutes from './Routes/usersRoutes.js'
 import groupRoutes from './Routes/groupRoutes.js'
+import adminRoutes from './Routes/Admin/adminRoutes.js'
 import { app, server } from './socket/socket.js';
 
 
@@ -50,6 +51,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/chat', messageRoutes)
 app.use('/api/user', usersRoutes)
 app.use('/api/group', groupRoutes)
+app.use('/api/admin/', adminRoutes)
 
 
 

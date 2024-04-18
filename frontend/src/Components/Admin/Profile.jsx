@@ -117,7 +117,7 @@ const Profile = () => {
 
   return (
     <>
-      <div className="bg-dark" style={{ height: "12rem" }}></div>
+      <div className="bg-warning" style={{ height: "12rem" }}></div>
       <div className="bg-light p-3">
         <div className="d-flex justify-content-between align-items-center">
           <div
@@ -155,7 +155,7 @@ const Profile = () => {
               </button>
             )}
           </div>
-          <div className="d-flex gap-4 align-items-center justify-content-center">
+          <div className="d-flex gap-4 align-items-center justify-content-center d-none">
             <div className="fs-5 text-center">
               <span>223</span>
               <p>likes</p>
@@ -183,7 +183,7 @@ const Profile = () => {
         </span>
         <p>{user && user.profile?.bio}</p>
       </div>
-      <div className="row d-flex justify-content-center align-items-center h-50">
+      <div className="row d-flex justify-content-center align-items-center ">
         {isLoading ? (
           <CircularLoading />
         ) : (

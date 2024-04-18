@@ -17,6 +17,7 @@ export const verifyToken = async (req, res, next) => {
         process.env.USER_REFRESH_SECRET_KEY,
         (err, decoded) => {
           if (err) {
+            console.log(err);
             return res.status(401).json({ message: "Invalid Refresh Token" });
           } else {
             const accessToken = jwt.sign(
